@@ -13,11 +13,25 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v6
 
-    - name: Setup MSBuild
-      uses: microsoft/setup-msbuild@v2.0.0
-
-    - name: Build Solution
-      run: msbuild opaihook.sln /p:Configuration=Release /p:Platform="x64"
+    - name: Build with MSBuild
+      shell: pwsh
+      run: |
+        # Ищем путь к свежему MSBuild в системе
+        $vsWhere = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
+        if (-not (Test-Path $vsWhere)) {
+            $vsWhere = "${env:ProgramFiles}\Microsoft Visual Studio\Installer\vswhere.exe"
+        }
+        
+        $msbuildPath = & $vsWhere -latest -products * -requires Microsoft.Component.MSBuild -find MSBuild\**\Bin\MSBuild.exe | Select-Object -First 1
+        
+        if (-not $msbuildPath -or -not (Test-Path $msbuildPath)) {
+            throw "MSBuild not found!"
+        }
+        
+        Write-Host "Found MSBuild at: $msbuildPath"
+        
+        # Запускаем сборку проекта
+        & $msbuildPath "opaihook.sln" /p:Configuration=Release /p:Platform="x64" /m
 
     - name: Upload Artifact
       uses: actions/upload-artifact@v4
