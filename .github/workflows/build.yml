@@ -1,19 +1,17 @@
 name: Build opaihook
 
 on:
-    push:
-      branches: [ main, master ]
-    workflow_dispatch:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch:
 
 jobs:
   build:
     runs-on: windows-latest
 
     steps:
-    - uses: actions/checkout@v4
-
-    - name: Setup MSBuild
-      uses: microsoft/setup-msbuild@v2
+    - name: Checkout repository
+      uses: actions/checkout@v4
 
     - name: Build Solution
       run: msbuild opaihook.sln /p:Configuration=Release /p:Platform="x64"
